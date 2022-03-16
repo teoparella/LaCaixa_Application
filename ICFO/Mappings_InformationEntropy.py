@@ -9,7 +9,6 @@ from qutip import *
 import matplotlib.pyplot as plt
 import itertools
 from itertools import combinations
-
 from scipy.linalg import eig, eigh
 from scipy.sparse.linalg import eigs, eigsh
 from scipy.sparse import csr_matrix
@@ -19,14 +18,13 @@ from scipy.sparse import csr_matrix
 
 
 #########################################   Molecules initialization    #########################################
-InitializeIsing=False
 
+InitializeIsing=False
 InitializeH2=True
 InitializeFH=False
 InitializeBeH2=False
 InitializeN2=False
 InitializeBH3=False
-
 InitializeO2=False #not implemented yet
 
 #########################################   Molecules    ########################################################
@@ -34,13 +32,13 @@ InitializeO2=False #not implemented yet
 if InitializeIsing == True:
     pass  #### not implemented yet
 
-
 if InitializeH2 == True:
     mol = pyscf.M(
                 atom = 'H 0 0 0; H 0 0 0.735',  # in Angstrom
                         basis = 'ccpvqz',      #  'sto-3g' 'ccpvdz' 'ccpvtz' 'ccpvqz'
                         symmetry = True,
-                        )         
+                        )       
+    
 if InitializeFH == True:
     mol = pyscf.M(
                 atom = 'H 0 0 0; F 0 0 0.917',  # in Angstrom
@@ -72,10 +70,7 @@ if InitializeBH3 == True:
                         symmetry = True,
                         )
     print(quote)
-    
-    
-
-    
+   
 nao=mol.nao
 
 
@@ -97,8 +92,6 @@ print('MO integrals (ij|kl) with 4-fold symmetry i>=j, k>=l have shape %s' %
               str(eri_4fold.shape))
 '''
 
-
-
 ######## get one-electron matrix elements in Atomic Orbitals or Molecular Orbitals basis   ######
 
 if InitializeIsing == False:
@@ -106,11 +99,9 @@ if InitializeIsing == False:
     hcore_mo = functools.reduce(np.dot, (myhf.mo_coeff.conj().T, hcore_ao, myhf.mo_coeff))
 else:
     hcore_mo=[]
-
-
+   
 
 #################### get two electron elements in AO or MO basis  ###############################
-
 
 if InitializeIsing == False:
     eris = ao2mo.get_ao_eri(mol)
@@ -122,10 +113,6 @@ else:
     
 print('Built-in molecular orbitals:   ',mol.nao)
 print('Total electrons:   ',mol.nelectron)
-
-
-
-### MAPPINGS 
 
 
 #########################################    JW MAPPING FUNCTION   #########################################
@@ -153,7 +140,6 @@ def JW_Mapping(OneBT,TwoBT,AO):
         creation.append(tensor(Creation_String))
         anihilation.append(tensor(Anihilation_String))
 
-    
     hamiltonian=creation[0]*0                 #np.zeros((2**AOnumber,2**AOnumber)))
 
     for i in range(AOnumber):
@@ -168,10 +154,7 @@ def JW_Mapping(OneBT,TwoBT,AO):
     return hamiltonian
 
 
-
 #########################################    PARITY MAPPING FUNCTION   #########################################
-
-
 
 def Parity_Mapping(OneBT,TwoBT,AO):
 
@@ -210,10 +193,8 @@ def Parity_Mapping(OneBT,TwoBT,AO):
                 Creation_Op=tensor([sigmax(),Creation_Op])
                 Anihilation_Op=tensor([sigmax(),Anihilation_Op])
                 
-
         creation.append(Creation_Op)
         anihilation.append(Anihilation_Op)
-
 
     hamiltonian=creation[0]*0                 #np.zeros((2**AOnumber,2**AOnumber)))
 
@@ -225,9 +206,8 @@ def Parity_Mapping(OneBT,TwoBT,AO):
                     hamiltonian += TwoBT[i][j][k][l]*creation[i]*creation[j]*anihilation[k]*anihilation[l]
         
     print('Parity Hamiltonian created. Type: ', type(hamiltonian))
-
+    
     return hamiltonian
-
 
 
 #########################################    Bravyi-Kitaev MAPPING FUNCTION   #########################################
@@ -262,7 +242,6 @@ def BK_Mapping(OneBT,TwoBT,AO):
                 else:                              #Reminder Set
                     SetsMatrix[i][j]=3
     print(SetsMatrix)
-
 
     #Sets matrix 1 correspond to update set, 2 to flip set,3 to reminder set. Diagonal 1s do not count.
 
@@ -351,9 +330,7 @@ def BK_Mapping(OneBT,TwoBT,AO):
                     A2=tensor([sigmaz(),A2])
 
         creation.append(0.5*(C1-C2))
-        anihilation.append(0.5*(A1+A2))
-    
-                
+        anihilation.append(0.5*(A1+A2))                
         
     hamiltonian=creation[0]*0                 #np.zeros((2**AOnumber,2**AOnumber)))
 
@@ -369,7 +346,6 @@ def BK_Mapping(OneBT,TwoBT,AO):
     return hamiltonian
     
 
-
 ### Mapping Entanglement Calculations
 
 nao=8
@@ -377,8 +353,6 @@ nao=8
 JW_Matrix=JW_Mapping(hcore_mo,eris_mo,nao)
 Parity_Matrix=Parity_Mapping(hcore_mo,eris_mo,nao)
 BK_Matrix=BK_Mapping(hcore_mo,eris_mo,nao)
-
-
 
 LoadGS=False
 nao=8
@@ -403,7 +377,6 @@ elif LoadGS==True:
     BK_eigvec=qload(SL_GSPath+str(nao)+'q_BK_'+Basis_SL)
     
 print(JW_eigvec)
-
 
 def ptracealt(rho,qkeep) :
     rd = rho.dims[0]
@@ -452,7 +425,6 @@ for k in range(2,permutations_max+1):
         BK_GSTraced=ptracealt(BK_eigvec,list(i))     #JW_GroundState.ptrace(list(i))
         BK_Entropy[k-2].append(entropy_vn(BK_GSTraced))
         
-
 
 ### Plot entropies for bipartitions
 
